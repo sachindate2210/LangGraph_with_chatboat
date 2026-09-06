@@ -1,0 +1,261 @@
+
+memory
+│
+├── session_memory
+├── memory_manager
+├── vector_memory
+└── rag_memory
+
+
+
+app.py              →  sirf Step 1 + graph ko call karta hai
+graph_state.py      →  data holder (sabke beech share hota hai)
+graph_nodes.py      →  Step 2 se Step 9 — alag alag functions
+graph_builder.py    →  sab steps ko connect karta hai (graph banata hai)
+
+
+
+User "Who is PM of India?" type karta hai
+        ↓
+app.py → Step 1 save karta hai (User Input)
+        ↓
+agent_graph.invoke() call hota hai
+        ↓
+    [goal_understanding_node]  → LLM se goal samajhta hai → DB save
+        ↓
+    [planning_node]            → LLM se plan banata hai → DB save
+        ↓
+    [memory_retrieval_node]    → session memory leta hai → DB save
+        ↓
+    [tool_selection_node]      → LLM decide karta hai kaunsa tool → DB save
+        ↓
+    [action_execution_node]    → Agent actually tool run karta hai → DB save
+        ↓
+    [observation_node]         → "completed" note karta hai → DB save
+        ↓
+    [decision_loop_node]       → "no further action" → DB save
+        ↓
+    [final_response_node]      → final answer DB save
+        ↓
+result["final_answer"] app.py ko milta hai
+        ↓
+User ko answer dikhta hai
+
+
+
+
+LangChain me ye NAHI ho sakta:
+
+    Agar answer galat hai → wapas jao tool selection pe
+
+
+Ek Line Summary :
+
+    LangChain = LLM, Tools, Memory ke liye library
+    LangGraph = Un tools ko ek controlled flow (graph) me chalane ka framework
+
+    Dono saath kaam karte hain — LangChain ke pieces ko LangGraph orchestrate karta hai.
+
+
+
+LangChain → "Ye lo tools, agent khud soch lega"
+
+LangGraph → "Tum decide karo — 
+              pehle Research Agent chalao,
+              uska output Writer Agent ko do,
+              Writer ka output PDF Agent ko do"
+
+
+
+agent/
+├── agents/
+│   ├── research_agent.py    ✅ (wiki + search)
+│   ├── calculator_agent.py  ✅ (calculator + python)
+│   ├── weather_agent.py     ✅ (weather)
+│   ├── database_agent.py    ✅ (database)
+│   ├── file_agent.py        ✅ (file + pdf + text)
+│   └── email_agent.py       ✅ (email)
+│
+├── multi_graph_state.py     ✅
+├── multi_graph_nodes.py     ✅
+└── multi_graph_builder.py   ✅
+
+app.py                       ✅ updated
+
+
+
+
+-----------------------------------------------
+
+Project Structure
+----------------------------------
+
+app.py                          ← User se query lo, graph chalao, answer dikhao
+
+agent/
+├── multi_graph_state.py        ← Shared register — sab data yahan
+├── multi_graph_nodes.py        ← Sab workers ka code — memory, manager, router, agents
+└── multi_graph_builder.py      ← Sab workers ko roads se jodata hai
+
+config/
+└── db_config.py                ← DB connection
+
+database/
+├── create_tables.py
+├── save_session.py
+└── save_step.py
+
+memory/
+├── memory_manager.py
+└── session_memory.py
+
+models/
+└── llm.py                      ← GPT-4o-mini
+
+tools/
+├── calculator_tool.py
+├── database_tool.py
+├── email_tool.py
+├── file_tool.py
+├── pdf_tool.py
+├── python_tool.py
+├── search_tool.py
+├── text_tool.py
+├── tool_registry.py
+├── weather_tool.py
+└── wiki_tool.py
+
+
+
+
+---------------------------------------------------------------
+Query: "Find PM of India and send email to abc@gmail.com"
+-------------------------------------------------------
+
+Step 1: app.py
+        → session_id banaya
+        → multi_agent_graph.invoke() call kiya
+
+Step 2: memory_retrieval_node
+        → pehle ki baatein memory se li
+        → register me likhi
+
+Step 3: manager_node
+        → LLM se poocha: "kya karna hai?"
+        → LLM bola: "research,email"
+        → task_queue = ["research", "email"]
+
+Step 4: router_node
+        → queue: ["research", "email"]
+        → "research" uthaya
+        → current_task = "research"
+        → queue = ["email"]
+
+Step 5: research_agent_node
+        → search_tool se PM of India search kiya
+        → research_result = "Narendra Modi is PM..."
+        → router ko wapas gaya
+
+Step 6: router_node
+        → queue: ["email"]
+        → "email" uthaya
+        → current_task = "email"
+        → queue = []
+
+Step 7: email_agent_node
+        → research_result li (Narendra Modi...)
+        → email_tool se abc@gmail.com pe bheja
+        → email_result = "Email Sent Successfully"
+        → router ko wapas gaya
+
+Step 8: router_node
+        → queue: []  (khaali!)
+        → current_task = "done"
+        → final_response ko bheja
+
+Step 9: final_response_node
+        → research_result + email_result jode
+        → final_answer = "Narendra Modi is PM...\n\nEmail Sent"
+
+Step 10: app.py
+         → final_answer mila
+         → User ko dikhaya ✅
+
+
+
+===================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+question
+--------------------------------
+
+1. Who is the CEO of Tesla and what other companies does he own?
+2. Who is the current Prime Minister of India and what is his political party?
+
+
+What is 3456 * 987?
+Write Python code for Fibonacci series
+What is weather in Nagpur?
+SELECT * FROM users
+Explain quantum computing and calculate 45^2
+
+
+
+hello sachin ye pdf me bana ke do
+hello sachin ye mail kar do sachindate2210@gmail.com
+
+
+
+session memory save
+--------------------------------
+My name is Sachin
+What is my name?
+
+
+
+Please find the cheapest flight and send the details to this email: sunil.date@valethi.com
+
+Please find the cheapest hotels in Nagpur, and send the details to this email: sunil.date@valethi.com
+
+Find cheapest hotels in nagpur and create pdf
+
+Find top 10 tourist places in Goa and send details to sunil.date@valethi.com
+
+
+
+Please find the cheapest flight available and send the details to this email: [sunil.date@valethi.com](mailto:sunil.date@valethi.com).
+  
+Include:
+
+* Flight name/airline
+* Ticket price
+* Departure and arrival times
+* Any important travel details
+
+Please share the information in bullet points.
+
+
+
+
+
+Who is PM of India and create a PDF of that information
+Find top 10 tourist places in Goa and send details to sunil@gmail.com
+What is weather in Mumbai and what is 25 * 48?
+
+
+
+What is artificial intelligence and email the explanation to sunil.date@valethi.com
+Find benefits of yoga, create a PDF and send it to sunil.date@valethi.com
+What is blockchain technology, make a PDF and email to sunil.date@valethi.com
+
+Find top 5 benefits of drinking water daily, create a PDF and send to sunil.date@valethi.com

@@ -1,0 +1,29 @@
+🪟 CMD Window 1 — FastAPI Backend
+
+D:
+cd D:\AI\LangGraph_with_chatboat
+venv\Scripts\activate
+uvicorn api.main:app --reload --port 8000
+
+
+🪟 CMD Window 2 — React Frontend
+
+D:
+cd D:\AI\LangGraph_with_chatboat\frontend
+npm run dev
+
+
+
+npm install
+
+
+React Frontend	http://localhost:5173
+FastAPI Backend	http://localhost:8000
+API Docs	http://localhost:8000/docs
+
+
+
+
+stop .env
+-----------------------
+deactivate

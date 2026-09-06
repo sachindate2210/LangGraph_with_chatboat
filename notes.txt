@@ -1,0 +1,59 @@
+Python venv instead
+----------------------------
+    python -m venv venv
+    .\venv\Scripts\activate
+
+
+libery
+----------------------------
+    pip install -r requirements.txt
+
+
+run app 
+-----------------------------------
+    streamlit run app.py
+    streamlit run ollama.py
+
+
+
+API Call
+-------------------------------------
+    cd "D:\AI\Langchain_with_chatboat\api"
+    streamlit run app.py
+    streamlit run client.py
+
+
+
+
+youtube Video URL
+-------------------------------------
+    https://www.youtube.com/watch?v=CT3r0Eei9eU&list=PLTDARY42LDV6flFgQLJCcVSXXa58mZ9Ty&index=5
+
+
+
+pip install langchain langchain-core langchain-openai langchain-ollama langchain-community langserve
+
+
+
+
+ai_agent.py
+------------------------
+
+pip install -U langchain langchain-openai langchain-community streamlit python-dotenv duckduckgo-search wikipedia
+pip install -U langchain langchain-openai langchain-community streamlit python-dotenv wikipedia duckduckgo-search
+pip install langchain==0.1.16
+pip install -U langchain langchain-openai langchain-community streamlit python-dotenv wikipedia duckduckgo-search
+
+
+pip install -U ddgs
+pip install -U langchain langchain-openai langchain-community streamlit python-dotenv wikipedia ddgs
+pip install numexpr
+pip install langchain-experimental
+pip install requests
+pip install psycopg2-binary
+
+pip install reportlab
+
+pip install secure-smtplib
+
+pip install pydantic
